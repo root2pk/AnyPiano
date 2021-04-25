@@ -1,10 +1,10 @@
 #pragma once
 /**
- Class to create instances of a harmonic sine oscillator
- By setting the fundamental frequency, number of harmonics and strength,
- multiple sine tone harmonics can be created
+ Class to create instances of a Hann object
+ Set duration of the Hann window in samples, and peak amplitude using setDur() and setFamp()
 
- Uses Oscillator.h objects to create sine tones
+ Use fullHann() or halfHann() to get a full hann window or half hann window returned as a float vector
+
 */
 #include<math.h>
 #include<vector>
@@ -15,33 +15,23 @@
 
 class Hann{
 public:
-	/*
-	*
-	Sample value is sum of each harmonic and its corresponding gain
-	Returns value of sample
-	*/
+
+	/* Returns a full Hann window with duration dur(in samples) and peak amplitude famp*/
 	std::vector<float> fullHann() {
-
-		//float sample = 0.0;
-
-		//for (int i = 0; i < numHarm; i++) {
-		//	float gain = exp(-float(i + 1) / strength);   // Gain = exp(-n/strength) for nth harmonic
-		//	sample += gain * harm[i].processSine();
-		//}
-		//return sample;
 
 		std::vector<float> f;
 		for (int i = 0; i < dur; i++) {
-			f.push_back(famp * 0.5 * (1 - cos(2 * M_PI * float(i / dur))));
+			f.push_back(famp * 0.5 * (1 - cos(2 * M_PI * float(i) / float(dur))));
 		}
 		return f;
 	}
 
+	/* Returns a half Hann window with duration dur(in samples) and peak amplitude famp*/
 	std::vector<float> halfHann() {
 
 		std::vector<float> f;
 		for (int i = 0; i < dur; i++) {
-			f.push_back(famp * 0.5 * (1 - cos(M_PI * float(i / dur))));
+			f.push_back(famp * 0.5 * (1 - cos(M_PI * float(i) / float(dur))));
 		}
 
 		return f;

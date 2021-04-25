@@ -9,21 +9,19 @@
 #pragma once
 
 #include <JuceHeader.h>
+#include "Oscillator.h"
+
+#include "String.h"
 #include "Hann.h"
-#include "Note.h"
-#include "MySynth.h"
-
-#include "Limiter.h"
-
 //==============================================================================
 /**
 */
-class PluginAudioProcessor  : public juce::AudioProcessor
+class Week9tutorialAudioProcessor  : public juce::AudioProcessor
 {
 public:
     //==============================================================================
-    PluginAudioProcessor();
-    ~PluginAudioProcessor() override;
+    Week9tutorialAudioProcessor();
+    ~Week9tutorialAudioProcessor() override;
 
     //==============================================================================
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
@@ -59,10 +57,14 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
 
 private:
-
-    // Synth parameters
-    Synthesiser synth;
-    int voiceCount = 16;
     //==============================================================================
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PluginAudioProcessor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Week9tutorialAudioProcessor)
+
+    Oscillator osc;
+    Oscillator LFO;
+
+    String str;
+    
+    Hann inputForce;
+
 };
