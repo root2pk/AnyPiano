@@ -126,9 +126,11 @@ bool Week9tutorialAudioProcessor::isBusesLayoutSupported (const BusesLayout& lay
 
 void Week9tutorialAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
 {
+    // Oscillator
     osc.setsampleRate(sampleRate);
     osc.setFrequency(220.0f);
 
+    // String 
     str.setsampleRate(sampleRate);
     str.setFrequency(220.0f);
     str.setLength(0.77f);
@@ -137,11 +139,14 @@ void Week9tutorialAudioProcessor::prepareToPlay(double sampleRate, int samplesPe
     str.setParameters();
     str.initGrid();
     
-    
+    // Input Force
     inputForce.setDur(round(0.0008 * sampleRate));
     inputForce.setFamp(5.0f);
-    std::vector<float> force = inputForce.halfHann();
-    
+       
+    // Counter
+    count.setCounter(0);
+
+    // LFO
     LFO.setsampleRate(sampleRate);
     LFO.setFrequency(1.0f);
 
@@ -167,19 +172,23 @@ void Week9tutorialAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer
 
     // Input Force
     int inputDuration = inputForce.getDur();
-    std::vector<float> force = inputForce.halfHann();
+    force = inputForce.fullHann();
+
+    // Gain
+    float gain = 1 / (inputForce.getFamp() * 0.0001);
 
     // ------------------------ Start DSP loop -----------------------------------------------
     for (int i = 0; i < numSamples; i++) {
-        if (i < inputDuration) {
-            str.setForce(force[i]);
+        if (count.getCounter() < inputDuration) {
+            str.setForce(force[count.getCounter()]);
         }
         else {
             str.setForce(0.0f);
         }
         
-        leftChannel[i] =  str.process();
+        leftChannel[i] =  gain * str.process();
         rightChannel[i] = leftChannel[i];
+        count.incCounter();
     }
 
 }

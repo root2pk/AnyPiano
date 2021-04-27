@@ -4,6 +4,7 @@
               addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1">
   <MAINGROUP id="vrTHAK" name="Week9tutorial">
     <GROUP id="{2486BCEB-0355-EA55-97E6-CB4B1E554ACF}" name="Source">
+      <FILE id="euEV7u" name="Counter.h" compile="0" resource="0" file="Source/Counter.h"/>
       <FILE id="ybSPhN" name="String.h" compile="0" resource="0" file="Source/String.h"/>
       <FILE id="zh0zS7" name="Hann.h" compile="0" resource="0" file="Source/Hann.h"/>
       <FILE id="DkQyBl" name="Oscillator.h" compile="0" resource="0" file="../AP_Assignment2/Source/Oscillator.h"/>

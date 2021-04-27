@@ -13,6 +13,7 @@
 
 #include "String.h"
 #include "Hann.h"
+#include "Counter.h"
 //==============================================================================
 /**
 */
@@ -60,11 +61,18 @@ private:
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Week9tutorialAudioProcessor)
 
+    // Oscillator
     Oscillator osc;
     Oscillator LFO;
 
+    // String
     String str;
     
+    // Input Force
     Hann inputForce;
+    std::vector<float> force;
+
+    //Counter
+    Counter count;
 
 };

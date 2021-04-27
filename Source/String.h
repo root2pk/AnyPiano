@@ -37,25 +37,25 @@ public:
 	/* Updates the grid for n+1 timestep*/
 	void updateGrid() {
 		for (int l = lstart; l < lend; l++) {
-			u0[l] = (2 * u1[l] + param1 * u2[l] + pow(lambda, 2) * (u1[l - 1] - 2 * u1[l] + u1[l + 1]) 
-				- pow(mu, 2) * (u1[l + 2] - 4 * u1[l + 1] + 6 * u1[l] - 4 * u1[l - 1] + u1[l - 2]))/param2;
+			u0[l] = (2 * u1[l] + param1 * u2[l] + lambdasq * (u1[l - 1] - 2 * u1[l] + u1[l + 1]) 
+				- musq * (u1[l + 2] - 4 * u1[l + 1] + 6 * u1[l] - 4 * u1[l - 1] + u1[l - 2]))/param2;
 		}
 
 	}
 
 	/* Updates the boundary for n+1 timestep*/
 	void updateBoundary() {
-		u0[0] = (2 * u1[0] + param1 * u2[0] + pow(lambda, 2) * (-2 * u1[0] + u1[1])
-			- pow(mu, 2) * (u1[2] - 4 * u1[1] + 5 * u1[0]))/param2;
+		u0[0] = (2 * u1[0] + param1 * u2[0] + lambdasq * (-2 * u1[0] + u1[1])
+			- musq * (u1[2] - 4 * u1[1] + 5 * u1[0]))/param2;
 
-		u0[1] = (2 * u1[1] + param1 * u2[1] + pow(lambda, 2) * (u1[0] - 2 * u1[1] + u1[2])
-			- pow(mu, 2) * (u1[3] - 4 * u1[2] + 6 * u1[1] - 4 * u1[0]))/param2;
+		u0[1] = (2 * u1[1] + param1 * u2[1] + lambdasq * (u1[0] - 2 * u1[1] + u1[2])
+			- musq * (u1[3] - 4 * u1[2] + 6 * u1[1] - 4 * u1[0]))/param2;
 
-		u0[N - 2] = (2 * u1[N - 2] - param1 * u2[N - 2] + pow(lambda, 2) * (u1[N - 3] - 2 * u1[N - 2] + u1[N - 1])
-			- pow(mu, 2) * (u1[N - 4] - 4 * u1[N - 3] + 6 * u1[N - 2] - 4 * u1[N - 1]))/param2;
+		u0[N - 2] = (2 * u1[N - 2] + param1 * u2[N - 2] + lambdasq * (u1[N - 3] - 2 * u1[N - 2] + u1[N - 1])
+			- musq * (u1[N - 4] - 4 * u1[N - 3] + 6 * u1[N - 2] - 4 * u1[N - 1]))/param2;
 
-		u0[N - 1] = (2 * u1[N - 1] - param1 * u2[N - 1] + pow(lambda, 2) * (-2 * u1[N - 1] + u1[N - 2])
-			- pow(mu, 2) * (u1[N - 3] - 4 * u1[N - 2] + 5 * u1[N - 1]))/param2;
+		u0[N - 1] = (2 * u1[N - 1] + param1 * u2[N - 1] + lambdasq * (-2 * u1[N - 1] + u1[N - 2])
+			- musq * (u1[N - 3] - 4 * u1[N - 2] + 5 * u1[N - 1]))/param2;
 	}
 
 	/* Adds the input force at coordinate xi*/
@@ -132,8 +132,8 @@ public:
 		hmin = sqrt(0.5 * (pow(c, 2) * pow(k, 2) + sqrt(pow(c, 4) * pow(k, 4) + 16 * pow(K, 2) * pow(k, 2))));
 		N = floor(L / hmin);
 		h = L / float(N);
-		lambda = c * k / h;
-		mu = k * K / pow(h, 2);	 
+		lambdasq = pow((c * k / h),2);
+		musq = k * k * K * K/ pow(h, 4);	 
 
 		// Input Force
 		forceCoeff = pow(k, 2) / (rho * A * h);
@@ -180,8 +180,8 @@ private:
 	float hmin;                         // Minimum grid spacing
 	
 	// Coefficients
-	float lambda;						// Courant Number
-	float mu;							// Numerical Stiffness Constant
+	float lambdasq;						// Courant Number (squared)
+	float musq;							// Numerical Stiffness Constant (squared)
 
 	// Grid Parameters
 

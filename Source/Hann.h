@@ -1,11 +1,17 @@
-#pragma once
 /**
- Class to create instances of a Hann object
- Set duration of the Hann window in samples, and peak amplitude using setDur() and setFamp()
+  ==============================================================================
 
- Use fullHann() or halfHann() to get a full hann window or half hann window returned as a float vector
+	Hann.h
+	Author:  Ruthu
 
+	Class to create instances of a Hann object
+	Set duration of the Hann window in samples, and peak amplitude using setDur() and setFamp()
+
+	Use fullHann() or halfHann() to get a full hann window or half hann window returned as a float vector
+  ==============================================================================
 */
+
+#pragma once
 #include<math.h>
 #include<vector>
 
