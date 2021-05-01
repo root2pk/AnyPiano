@@ -19,7 +19,7 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-class Hann{
+class Hann {
 public:
 
 	/* Returns a full Hann window with duration dur(in samples) and peak amplitude famp*/

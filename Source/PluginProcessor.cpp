@@ -10,7 +10,7 @@
 #include "PluginEditor.h"
 
 //==============================================================================
-Week9tutorialAudioProcessor::Week9tutorialAudioProcessor()
+PluginAudioProcessor::PluginAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
      : AudioProcessor (BusesProperties()
                      #if ! JucePlugin_IsMidiEffect
@@ -21,20 +21,26 @@ Week9tutorialAudioProcessor::Week9tutorialAudioProcessor()
                      #endif
                        )
 #endif
-{
+{   // Constructor
+    // Adding Synth voices
+    for (int i = 0; i < voiceCount; i++) {
+        synth.addVoice(new SynthVoice());
+    }
+    // Adding Synth sound
+    synth.addSound(new SynthSound());
 }
 
-Week9tutorialAudioProcessor::~Week9tutorialAudioProcessor()
+PluginAudioProcessor::~PluginAudioProcessor()
 {
 }
 
 //==============================================================================
-const juce::String Week9tutorialAudioProcessor::getName() const
+const juce::String PluginAudioProcessor::getName() const
 {
     return JucePlugin_Name;
 }
 
-bool Week9tutorialAudioProcessor::acceptsMidi() const
+bool PluginAudioProcessor::acceptsMidi() const
 {
    #if JucePlugin_WantsMidiInput
     return true;
@@ -43,7 +49,7 @@ bool Week9tutorialAudioProcessor::acceptsMidi() const
    #endif
 }
 
-bool Week9tutorialAudioProcessor::producesMidi() const
+bool PluginAudioProcessor::producesMidi() const
 {
    #if JucePlugin_ProducesMidiOutput
     return true;
@@ -52,7 +58,7 @@ bool Week9tutorialAudioProcessor::producesMidi() const
    #endif
 }
 
-bool Week9tutorialAudioProcessor::isMidiEffect() const
+bool PluginAudioProcessor::isMidiEffect() const
 {
    #if JucePlugin_IsMidiEffect
     return true;
@@ -61,45 +67,46 @@ bool Week9tutorialAudioProcessor::isMidiEffect() const
    #endif
 }
 
-double Week9tutorialAudioProcessor::getTailLengthSeconds() const
+double PluginAudioProcessor::getTailLengthSeconds() const
 {
     return 0.0;
 }
 
-int Week9tutorialAudioProcessor::getNumPrograms()
+int PluginAudioProcessor::getNumPrograms()
 {
     return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
                 // so this should be at least 1, even if you're not really implementing programs.
 }
 
-int Week9tutorialAudioProcessor::getCurrentProgram()
+int PluginAudioProcessor::getCurrentProgram()
 {
     return 0;
 }
 
-void Week9tutorialAudioProcessor::setCurrentProgram (int index)
+void PluginAudioProcessor::setCurrentProgram (int index)
 {
 }
 
-const juce::String Week9tutorialAudioProcessor::getProgramName (int index)
+const juce::String PluginAudioProcessor::getProgramName (int index)
 {
     return {};
 }
 
-void Week9tutorialAudioProcessor::changeProgramName (int index, const juce::String& newName)
+void PluginAudioProcessor::changeProgramName (int index, const juce::String& newName)
 {
 }
 
 //==============================================================================
 
-void Week9tutorialAudioProcessor::releaseResources()
+
+void PluginAudioProcessor::releaseResources()
 {
     // When playback stops, you can use this as an opportunity to free up any
     // spare memory, etc.
 }
 
 #ifndef JucePlugin_PreferredChannelConfigurations
-bool Week9tutorialAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
+bool PluginAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
 {
   #if JucePlugin_IsMidiEffect
     juce::ignoreUnused (layouts);
@@ -124,95 +131,50 @@ bool Week9tutorialAudioProcessor::isBusesLayoutSupported (const BusesLayout& lay
 }
 #endif
 
-void Week9tutorialAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
+
+//==============================================================================
+
+void PluginAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
 {
-    // Oscillator
-    osc.setsampleRate(sampleRate);
-    osc.setFrequency(220.0f);
+    // Use this method as the place to do any pre-playback
+    // initialisation that you need..
 
-    // String 
-    str.setsampleRate(sampleRate);
-    str.setFrequency(220.0f);
-    str.setLength(0.77f);
-    str.setRadius(0.00051f);
-    str.setT60(5.0f);
-    str.setParameters();
-    str.initGrid();
-    
-    // Input Force
-    inputForce.setDur(round(0.0008 * sampleRate));
-    inputForce.setFamp(5.0f);
-       
-    // Counter
-    count.setCounter(0);
+    synth.setCurrentPlaybackSampleRate(sampleRate);             // Set sample rate for synthesiser
 
-    // LFO
-    LFO.setsampleRate(sampleRate);
-    LFO.setFrequency(1.0f);
-
+    for (int i = 0; i < voiceCount; i++) {
+        SynthVoice* v = dynamic_cast<SynthVoice*>(synth.getVoice(i));
+        v->init(sampleRate);
+    }
 }
-void Week9tutorialAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
+
+void PluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
     juce::ScopedNoDenormals noDenormals;
-    auto totalNumInputChannels  = getTotalNumInputChannels();
-    auto totalNumOutputChannels = getTotalNumOutputChannels();
-
-    // In case we have more outputs than inputs, this code clears any output
-    // channels that didn't contain input data, (because these aren't
-    // guaranteed to be empty - they may contain garbage).
-    // This is here to avoid people getting screaming feedback
-    // when they first compile a plugin, but obviously you don't need to keep
-    // this code if your algorithm always overwrites all the output channels.
-    for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
-        buffer.clear (i, 0, buffer.getNumSamples());
-
-    int numSamples = buffer.getNumSamples();
-    auto* leftChannel = buffer.getWritePointer(0);          // 0 for left channel
-    auto* rightChannel = buffer.getWritePointer(1);         // 1 for right channel
-
-    // Input Force
-    int inputDuration = inputForce.getDur();
-    force = inputForce.fullHann();
-
-    // Gain
-    float gain = 1 / (inputForce.getFamp() * 0.0001);
-
-    // ------------------------ Start DSP loop -----------------------------------------------
-    for (int i = 0; i < numSamples; i++) {
-        if (count.getCounter() < inputDuration) {
-            str.setForce(force[count.getCounter()]);
-        }
-        else {
-            str.setForce(0.0f);
-        }
-        
-        leftChannel[i] =  gain * str.process();
-        rightChannel[i] = leftChannel[i];
-        count.incCounter();
-    }
-
+    
+    // Calling render block for synth
+    synth.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
 }
 
 //==============================================================================
-bool Week9tutorialAudioProcessor::hasEditor() const
+bool PluginAudioProcessor::hasEditor() const
 {
     return true; // (change this to false if you choose to not supply an editor)
 }
 
-juce::AudioProcessorEditor* Week9tutorialAudioProcessor::createEditor()
+juce::AudioProcessorEditor* PluginAudioProcessor::createEditor()
 {
-    return new Week9tutorialAudioProcessorEditor (*this);
+    return new PluginAudioProcessorEditor (*this);
 }
 
 //==============================================================================
-void Week9tutorialAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
+void PluginAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
     // You should use this method to store your parameters in the memory block.
     // You could do that either as raw data, or use the XML or ValueTree classes
     // as intermediaries to make it easy to save and load complex data.
 }
 
-void Week9tutorialAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
+void PluginAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
@@ -222,5 +184,5 @@ void Week9tutorialAudioProcessor::setStateInformation (const void* data, int siz
 // This creates new instances of the plugin..
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
-    return new Week9tutorialAudioProcessor();
+    return new PluginAudioProcessor();
 }
