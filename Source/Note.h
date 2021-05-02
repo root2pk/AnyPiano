@@ -20,6 +20,8 @@
 
 class Note {
 public:
+
+    /* Process function for note which adds samples from str.process for each string(based on some interval) and returns the sample*/
     float process() {
         float sample = 0.0f;
 
@@ -110,7 +112,6 @@ private:
     float famp;
     std::vector<float> forceSignal;
     Hann inputForce;
-
 
     // Random
     juce::Random random;

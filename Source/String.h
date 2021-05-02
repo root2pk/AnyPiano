@@ -18,10 +18,15 @@
 class String {
 
 public:
-	/*
-	*
-	Process returns the signal at xo of the string for each sample using FDTD
-	*/
+
+	/* Destructor*/
+	~String() {
+		delete[] u0;
+		delete[] u1;
+		delete[] u2;
+	}
+
+	/* Process returns the signal at xo of the string for each sample using FDTD*/	
 	float process() {
 		updateGrid();
 		updateBoundary();
