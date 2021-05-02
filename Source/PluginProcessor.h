@@ -58,8 +58,16 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
 
 private:
+    /// Audio Processor value parameters
+    juce::AudioProcessorValueTreeState parameters;
+    std::atomic<float>* T60time;
+    std::atomic<float>* attack;
+    std::atomic<float>* decay;
+    std::atomic<float>* sustain;
+    std::atomic<float>* release;
+    std::atomic<float>* gain;
 
-    // Synth parameters
+    /// Synth parameters
     juce::Synthesiser synth;
     int voiceCount = 16;
     //==============================================================================

@@ -8,6 +8,7 @@
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include "JuceHeader.h"
 
 //==============================================================================
 PluginAudioProcessor::PluginAudioProcessor()
@@ -19,15 +20,45 @@ PluginAudioProcessor::PluginAudioProcessor()
                       #endif
                        .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
                      #endif
-                       )
+                       ),
 #endif
+parameters(*this, nullptr, "ParamTree", {
+// Parameter layout 
+// id, description, min val, max val, default val
+std::make_unique<juce::AudioParameterFloat>("gain","Gain",0.1f, 2000.0f, 1000.0f),
+std::make_unique<juce::AudioParameterFloat>("T60time","T60(s)",1.0f, 10.0f, 5.0f),
+std::make_unique<juce::AudioParameterFloat>("attack","Attack(s)",0.01f, 2.0f, 0.05f),
+std::make_unique<juce::AudioParameterFloat>("decay","Decay(s)",0.01f, 2.0f, 0.05f),
+std::make_unique<juce::AudioParameterFloat>("sustain","Sustain(level)",0.1f, 1.0f, 0.5f),
+std::make_unique<juce::AudioParameterFloat>("release","Release(s)",0.01f, 5.0f, 0.2f),
+//Add more
+})
+
 {   // Constructor
+
+     /// Audio Processor Value Parameters
+    T60time = parameters.getRawParameterValue("T60time");
+    attack = parameters.getRawParameterValue("attack");
+    decay = parameters.getRawParameterValue("decay");
+    sustain = parameters.getRawParameterValue("sustain");
+    release = parameters.getRawParameterValue("release");
+    gain = parameters.getRawParameterValue("gain");
+
+
+
     // Adding Synth voices
     for (int i = 0; i < voiceCount; i++) {
         synth.addVoice(new SynthVoice());
     }
     // Adding Synth sound
     synth.addSound(new SynthSound());
+
+    // Variable Parameters
+    for (int i = 0; i < voiceCount; i++) {
+        SynthVoice* v = dynamic_cast<SynthVoice*>(synth.getVoice(i));
+        v->setParamPointers(T60time, gain);
+        v->setADSRPointers(attack, decay, sustain, release);
+    }
 }
 
 PluginAudioProcessor::~PluginAudioProcessor()
@@ -163,21 +194,27 @@ bool PluginAudioProcessor::hasEditor() const
 
 juce::AudioProcessorEditor* PluginAudioProcessor::createEditor()
 {
-    return new PluginAudioProcessorEditor (*this);
-}
+    return new juce::GenericAudioProcessorEditor (*this);
+} 
 
 //==============================================================================
 void PluginAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
-    // You should use this method to store your parameters in the memory block.
-    // You could do that either as raw data, or use the XML or ValueTree classes
-    // as intermediaries to make it easy to save and load complex data.
+    auto state = parameters.copyState();
+    std::unique_ptr<juce::XmlElement> xml(state.createXml());
+    copyXmlToBinary(*xml, destData);
 }
 
 void PluginAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
-    // You should use this method to restore your parameters from this memory block,
-    // whose contents will have been created by the getStateInformation() call.
+    std::unique_ptr<juce::XmlElement> xmlState(getXmlFromBinary(data, sizeInBytes));
+    if (xmlState.get() != nullptr)
+    {
+        if (xmlState->hasTagName(parameters.state.getType()))
+        {
+            parameters.replaceState(juce::ValueTree::fromXml(*xmlState));
+        }
+    }
 }
 
 //==============================================================================

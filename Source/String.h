@@ -29,8 +29,10 @@ public:
 		float sample = u0[lo];
 		
 		// Copy array values after timestep
+		float* tempPtr = u2;
 		u2 = u1;
 		u1 = u0;
+		u0 = tempPtr;
 
 		return sample;
 	}
@@ -143,14 +145,14 @@ public:
 
 	/* Initialises grids (call only after setParameters() has been called)*/
 	void initGrid() {
-		std::vector<float> temp(N, 0);
-		u0 = temp;
-		u1 = temp;
-		u2 = temp;
+		//std::vector<float> temp(N, 0);
+		//u0 = temp;
+		//u1 = temp;
+		//u2 = temp;
 
-		//u0 = new float[N] {0};
-		//u1 = new float[N] {0};
-		//u2 = new float[N] {0};
+		u0 = new float[N] {0};
+		u1 = new float[N] {0};
+		u2 = new float[N] {0};
 
 		lend = N - 2;
 		li = floor(xi * N);
@@ -190,13 +192,13 @@ private:
 
 	// Grid Parameters
 
-	std::vector<float> u0;              // State at time n+1
-	std::vector<float> u1;				// State at time n
-	std::vector<float> u2;				// State at time n-1
+	//std::vector<float> u0;              // State at time n+1
+	//std::vector<float> u1;				// State at time n
+	//std::vector<float> u2;				// State at time n-1
 
-	//float *u0;
-	//float *u1;
-	//float *u2;
+	float *u0;
+	float *u1;
+	float *u2;
 
 	int N;                              // Number of Grid spaces
 	int lstart = 2;                     // Start index

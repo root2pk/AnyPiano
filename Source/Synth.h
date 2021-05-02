@@ -11,6 +11,7 @@
 #pragma once
 #include "JuceHeader.h"
 #include "Note.h"
+#include "Oscillator.h"
 
 // ===========================
 // ===========================
@@ -44,8 +45,27 @@ public:
     SynthVoice() {}
 
     void init(float sampleRate) {
+        // Oscillator
+        osc.setsampleRate(sampleRate);
+        
+        //Note
         note.setSampleRate(sampleRate);
-        note.setSampleRate(sampleRate);
+        
+        /// ADSR
+        env.setSampleRate(sampleRate); 
+
+    }
+
+    void setParamPointers(std::atomic<float>* T60in, std::atomic<float>* G){
+        T60time = T60in;
+        gain = G;
+    }
+
+    void setADSRPointers(std::atomic<float>* A, std::atomic<float>* D, std::atomic<float>* S, std::atomic<float>* R) {
+        attack = A;
+        decay = D;
+        sustain = S;
+        release = R;
     }
     //--------------------------------------------------------------------------
     /**
@@ -59,8 +79,14 @@ public:
     void startNote(int midiNoteNumber, float velocity, juce::SynthesiserSound*, int /*currentPitchWheelPosition*/) override
     {
         playing = true;
-        int lim1 = 14;
-        int lim2 = 30;
+        ending = false;
+
+        // Oscillator
+        osc.setFrequency(juce::MidiMessage::getMidiNoteInHertz(midiNoteNumber));
+
+        // Note
+        lim1 = 14;
+        lim2 = 30;
         if (midiNoteNumber < lim1) {
             note.setNumStrings(1);
         }
@@ -72,9 +98,13 @@ public:
         }
         float length = (-0.019196429) * float(midiNoteNumber) + 1.815625;
         float radius = (-2.08333e-03) * float(midiNoteNumber) + 0.62875;
-        note.setStringParams(juce::MidiMessage::getMidiNoteInHertz(midiNoteNumber), length, radius, 5.0f);
+        note.setStringParams(juce::MidiMessage::getMidiNoteInHertz(midiNoteNumber), length, radius, *T60time);
         note.setForceParameters(1.2, 5.0f);
         note.setInterval(20);
+
+        /// ADSR
+        env.reset();
+        env.noteOn();
 
     }
     //--------------------------------------------------------------------------
@@ -86,9 +116,15 @@ public:
      @param allowTailOff bool to decie if the should be any volume decay
      */
     void stopNote(float /*velocity*/, bool allowTailOff) override
-    {
-        clearCurrentNote();
-        playing = false;
+    {   
+        if (allowTailOff) {
+            env.noteOff();
+            ending = true;
+        }
+        else {
+            clearCurrentNote();
+            playing = false;
+        }
     }
 
     //--------------------------------------------------------------------------
@@ -103,21 +139,42 @@ public:
      */
     void renderNextBlock(juce::AudioSampleBuffer& outputBuffer, int startSample, int numSamples) override
     {   
-        gain = 2000.0f;
+
         if (playing) // check to see if this voice should be playing
         {
+            /// ADSR variable parameters
+            juce::ADSR::Parameters envParams;
+            envParams.attack = *attack;
+            envParams.decay = *decay;
+            envParams.sustain = *sustain;
+            envParams.release = *release;
+            env.setParameters(envParams);
+
+            float G = *gain;
+
             // iterate through the necessary number of samples (from startSample up to startSample + numSamples)
             for (int sampleIndex = startSample; sampleIndex < (startSample + numSamples); sampleIndex++)
             {
                 // your sample-by-sample DSP code here!
                 // An example white noise generater as a placeholder - replace with your own code
-                float currentSample = gain*note.process();
+
+                float envVal = env.getNextSample();
+
+                float currentSample = envVal * note.process();
+                //float currentSample = envVal * osc.processTri();
 
                 // for each channel, write the currentSample float to the output
                 for (int chan = 0; chan < outputBuffer.getNumChannels(); chan++)
                 {
                     // The output sample is scaled by 0.2 so that it is not too loud by default
-                    outputBuffer.addSample(chan, sampleIndex, currentSample);
+                    outputBuffer.addSample(chan, sampleIndex, currentSample * G);
+                }
+
+                if (ending) {
+                    if (envVal < 0.001f) {
+                        clearCurrentNote();
+                        playing = false;
+                    }
                 }
             }
         }
@@ -143,14 +200,28 @@ private:
     // Set up any necessary variables here
     /// Should the voice be playing?
     bool playing = false;
+    bool ending = false;
 
     /// Random Object
     juce::Random random;
 
+    /// Oscillator object
+    Oscillator osc;
+
     /// Note object
     Note note;
+    int lim1;
+    int lim2;
+    std::atomic<float>* T60time;
 
     /// Gain
-    float gain;
+    std::atomic<float>* gain;
+
+    /// ADSR
+    juce::ADSR env;
+    std::atomic<float>* attack;
+    std::atomic<float>* decay;
+    std::atomic<float>* sustain;
+    std::atomic<float>* release;
 
 };
