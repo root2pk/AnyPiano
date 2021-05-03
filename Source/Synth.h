@@ -45,8 +45,6 @@ public:
     SynthVoice() {}
 
     void init(float sampleRate) {
-        // Oscillator
-        osc.setsampleRate(sampleRate);
         
         //Note
         note.setSampleRate(sampleRate);
@@ -58,7 +56,10 @@ public:
 
     void setParamPointers(std::atomic<float>* T60in, std::atomic<float>* G, std::atomic<float>* intervalIn, 
         std::atomic<float>* velCurveIn,std::atomic<float>* intTimeIn, 
-        std::atomic<float>* EIn, std::atomic<float>* rhoIn, std::atomic<float>* xiIn, std::atomic<float>* xoIn){
+        std::atomic<float>* EIn, std::atomic<float>* rhoIn,
+        std::atomic<float>* xiIn, std::atomic<float>* xoIn,
+        std::atomic<float>* lengthParamIn, std::atomic<float>* radiusParamIn,
+        std::atomic<float>* lim1In, std::atomic<float>* lim2In){
         T60time = T60in;
         gain = G;
         interval = intervalIn;
@@ -70,7 +71,15 @@ public:
 
         xi = xiIn;
         xo = xoIn;
+
+        lengthParam = lengthParamIn;
+        radiusParam = radiusParamIn;
+        
+        lim1 = lim1In;
+        lim2 = lim2In;
     }
+
+    
 
     void setADSRPointers(std::atomic<float>* A, std::atomic<float>* D, std::atomic<float>* S, std::atomic<float>* R) {
         attack = A;
@@ -92,27 +101,22 @@ public:
         playing = true;
         ending = false;
 
-        // Oscillator
-        osc.setFrequency(juce::MidiMessage::getMidiNoteInHertz(midiNoteNumber));
-
         // Note
-        lim1 = 14;
-        lim2 = 30;
-        if (midiNoteNumber < lim1) {
+        if (midiNoteNumber < round(*lim1)) {
             note.setNumStrings(1);
         }
-        else if(midiNoteNumber < lim2) {
+        else if(midiNoteNumber < round(*lim2)) {
             note.setNumStrings(2);
         }
         else {
             note.setNumStrings(3);
         }
-        float length = (-0.019196429) * float(midiNoteNumber) + 1.815625;
-        float radius = (-2.08333e-03) * float(midiNoteNumber) + 0.62875;
+        float length =  (*lengthParam) * (-0.019196429 * float(midiNoteNumber) + 1.815625);
+        float radius = (*radiusParam) * (-2.08333e-03 * float(midiNoteNumber) + 0.62875);
 
         // Set Note properties
         note.setInterval(*interval);
-        note.setMaterial(*E, *rho);
+        note.setMaterial((*E) * 1e9, *rho);
         note.setInputOutput(*xi, *xo);
         note.setStringParams(juce::MidiMessage::getMidiNoteInHertz(midiNoteNumber), length, radius, *T60time);
         note.setForceParameters(*intTime, 15.0f + (*velCurve) * (velocity-64.0f));
@@ -176,7 +180,6 @@ public:
                 float envVal = env.getNextSample();
 
                 float currentSample = envVal * note.process();
-                //float currentSample = envVal * osc.processTri();
 
                 // for each channel, write the currentSample float to the output
                 for (int chan = 0; chan < outputBuffer.getNumChannels(); chan++)
@@ -217,16 +220,8 @@ private:
     bool playing = false;
     bool ending = false;
 
-    /// Random Object
-    juce::Random random;
-
-    /// Oscillator object
-    Oscillator osc;
-
     /// Note object
     Note note;
-    int lim1;
-    int lim2;
     std::atomic<float>* T60time;
 
     /// Variable Parameters
@@ -240,6 +235,11 @@ private:
     std::atomic<float>* xi;
     std::atomic<float>* xo;
 
+    std::atomic<float>* lengthParam;
+    std::atomic<float>* radiusParam;
+
+    std::atomic<float>* lim1;
+    std::atomic<float>* lim2;
 
     /// ADSR
     juce::ADSR env;

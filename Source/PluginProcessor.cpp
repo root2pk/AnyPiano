@@ -38,6 +38,10 @@ std::make_unique<juce::AudioParameterFloat>("youngsModulus","Young's Modulus(GPa
 std::make_unique<juce::AudioParameterFloat>("density","Density (kg/m^3)",7000.0f, 10000.0f, 8000.0f),
 std::make_unique<juce::AudioParameterFloat>("xi","Striking Point",0.01f, 0.99f, 0.3f),
 std::make_unique<juce::AudioParameterFloat>("xo","Microphone Position", 0.01f, 0.99f, 0.5f),
+std::make_unique<juce::AudioParameterFloat>("lengthParam","Length",0.1f, 10.0f, 1.0f),
+std::make_unique<juce::AudioParameterFloat>("radiusParam","Radius",0.1f, 10.0f, 1.0f),
+std::make_unique<juce::AudioParameterFloat>("lim1","MIDI limit for 1 string note", 1.0f, 127.0f, 14.0f),
+std::make_unique<juce::AudioParameterFloat>("lim2","MIDI limit for 2 string note", 1.0f, 127.0f, 30.0f),
 //Add more
 })
 
@@ -59,6 +63,13 @@ std::make_unique<juce::AudioParameterFloat>("xo","Microphone Position", 0.01f, 0
     xi = parameters.getRawParameterValue("xi");
     xo = parameters.getRawParameterValue("xo");
 
+    lengthParam = parameters.getRawParameterValue("lengthParam");
+    radiusParam = parameters.getRawParameterValue("radiusParam");
+
+    lim1 = parameters.getRawParameterValue("lim1");
+    lim2 = parameters.getRawParameterValue("lim2");
+
+
 
 
     // Adding Synth voices
@@ -71,7 +82,7 @@ std::make_unique<juce::AudioParameterFloat>("xo","Microphone Position", 0.01f, 0
     // Variable Parameters
     for (int i = 0; i < voiceCount; i++) {
         SynthVoice* v = dynamic_cast<SynthVoice*>(synth.getVoice(i));
-        v->setParamPointers(T60time, gain, interval, velCurve, intTime, youngsModulus, density, xi ,xo);
+        v->setParamPointers(T60time, gain, interval, velCurve, intTime, youngsModulus, density, xi ,xo, lengthParam, radiusParam, lim1, lim2);
         v->setADSRPointers(attack, decay, sustain, release);
     }
 }

@@ -76,6 +76,13 @@ private:
     std::atomic<float>* xi;
     std::atomic<float>* xo;
 
+    std::atomic<float>* lengthParam;
+    std::atomic<float>* radiusParam;
+    
+    std::atomic<float>* lim1;
+    std::atomic<float>* lim2;
+
+
     /// Synth parameters
     juce::Synthesiser synth;
     int voiceCount = 16;
