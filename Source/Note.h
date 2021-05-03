@@ -30,14 +30,14 @@ public:
             if (sampleCount >= interval*i) {
 
                 if (noteSampleCount[i] < durationInSamples) {
-                    str[i].setForce(forceSignal[noteSampleCount[i]]);
+                    str[i]->setForce(forceSignal[noteSampleCount[i]]);
                 }
 
                 else {
-                    str[i].setForce(0.0f);
+                    str[i]->setForce(0.0f);
                 }
 
-                sample += str[i].process();
+                sample += str[i]->process();
                 noteSampleCount[i]++;
             }
         }
@@ -57,13 +57,13 @@ public:
         r = radiusInMillimetres/1000.0f;
         T60 = T60TimeInSeconds;
         for (int i = 0; i < numStrings; i++) {
-            str[i].setsampleRate(sampleRate);
-            str[i].setFrequency(freq + random.nextFloat());
-            str[i].setLength(L);
-            str[i].setRadius(r);
-            str[i].setT60(T60);
-            str[i].setParameters();
-            str[i].initGrid();
+            str[i]->setsampleRate(sampleRate);
+            str[i]->setFrequency(freq + random.nextFloat());
+            str[i]->setLength(L);
+            str[i]->setRadius(r);
+            str[i]->setT60(T60);
+            str[i]->setParameters();
+            str[i]->initGrid();
         }
     }
 
@@ -81,7 +81,7 @@ public:
     void setNumStrings(int number){
         numStrings = number;
         for (int i = 0; i < numStrings; i++) {
-            str.push_back(String());
+            str.push_back(new String);
             noteSampleCount.push_back(0);
         }
     }
@@ -105,7 +105,7 @@ private:
     float L;
     float r;
     float T60;
-    std::vector<String> str;
+    std::vector<String*> str;
 
     // Members to pass on to Input Force
     int durationInSamples;
