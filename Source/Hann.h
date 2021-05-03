@@ -21,23 +21,25 @@
 
 class Hann {
 public:
+	///* Destructor*/
+	//~Hann() {
+	//	delete[] f;
+	//}
 
 	/* Returns a full Hann window with duration dur(in samples) and peak amplitude famp*/
-	std::vector<float> fullHann() {
+	float* fullHann() {
 
-		std::vector<float> f;
 		for (int i = 0; i < dur; i++) {
-			f.push_back(famp * 0.5 * (1 - cos(2 * M_PI * float(i) / float(dur))));
+			f[i] = famp * 0.5 * (1 - cos(2 * M_PI * float(i) / float(dur)));
 		}
 		return f;
 	}
 
 	/* Returns a half Hann window with duration dur(in samples) and peak amplitude famp*/
-	std::vector<float> halfHann() {
+	float* halfHann() {
 
-		std::vector<float> f;
 		for (int i = 0; i < dur; i++) {
-			f.push_back(famp * 0.5 * (1 - cos(M_PI * float(i) / float(dur))));
+			f[i] = famp * 0.5 * (1 - cos(M_PI * float(i) / float(dur)));
 		}
 
 		return f;
@@ -53,12 +55,15 @@ public:
 	/* Set duration of force signal in samples*/
 	void setDur(int d) {
 		dur = d;
+		f = new float[dur];
 	}
 	int getDur() {
 		return dur;
 	}
 
 private:
+
+	float *f;                           // Force signal
 	float famp;                         //  Peak amplitude of input (N)
 	int dur;                            // Duration of input in samples
 

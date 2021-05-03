@@ -150,10 +150,6 @@ public:
 
 	/* Initialises grids (call only after setParameters() has been called)*/
 	void initGrid() {
-		//std::vector<float> temp(N, 0);
-		//u0 = temp;
-		//u1 = temp;
-		//u2 = temp;
 
 		u0 = new float[N] {0};
 		u1 = new float[N] {0};
@@ -196,11 +192,6 @@ private:
 	float musq;							// Numerical Stiffness Constant (squared)
 
 	// Grid Parameters
-
-	//std::vector<float> u0;              // State at time n+1
-	//std::vector<float> u1;				// State at time n
-	//std::vector<float> u2;				// State at time n-1
-
 	float *u0;
 	float *u1;
 	float *u2;

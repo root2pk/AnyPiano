@@ -21,6 +21,11 @@
 class Note {
 public:
 
+    ///* Destructor*/
+    //~Note() {
+    //    delete[] noteSampleCount;
+    //    delete[] forceSignal;
+    //}
     /* Process function for note which adds samples from str.process for each string(based on some interval) and returns the sample*/
     float process() {
         float sample = 0.0f;
@@ -82,8 +87,8 @@ public:
         numStrings = number;
         for (int i = 0; i < numStrings; i++) {
             str.push_back(new String);
-            noteSampleCount.push_back(0);
         }
+        noteSampleCount = new int[numStrings] {0};
     }
 
     int getNumString(){
@@ -110,7 +115,7 @@ private:
     // Members to pass on to Input Force
     int durationInSamples;
     float famp;
-    std::vector<float> forceSignal;
+    float *forceSignal;
     Hann inputForce;
 
     // Random
@@ -122,5 +127,5 @@ private:
 
     // Counter
     int sampleCount = 0;
-    std::vector<int> noteSampleCount;
+    int *noteSampleCount;
 };
