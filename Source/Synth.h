@@ -56,10 +56,20 @@ public:
 
     }
 
-    void setParamPointers(std::atomic<float>* T60in, std::atomic<float>* G, std::atomic<float>* intervalIn){
+    void setParamPointers(std::atomic<float>* T60in, std::atomic<float>* G, std::atomic<float>* intervalIn, 
+        std::atomic<float>* velCurveIn,std::atomic<float>* intTimeIn, 
+        std::atomic<float>* EIn, std::atomic<float>* rhoIn, std::atomic<float>* xiIn, std::atomic<float>* xoIn){
         T60time = T60in;
         gain = G;
         interval = intervalIn;
+        velCurve = velCurveIn;
+        intTime = intTimeIn;
+
+        E = EIn;
+        rho = rhoIn;
+
+        xi = xiIn;
+        xo = xoIn;
     }
 
     void setADSRPointers(std::atomic<float>* A, std::atomic<float>* D, std::atomic<float>* S, std::atomic<float>* R) {
@@ -99,9 +109,13 @@ public:
         }
         float length = (-0.019196429) * float(midiNoteNumber) + 1.815625;
         float radius = (-2.08333e-03) * float(midiNoteNumber) + 0.62875;
-        note.setStringParams(juce::MidiMessage::getMidiNoteInHertz(midiNoteNumber), length, radius, *T60time);
-        note.setForceParameters(1.2, 5.0f);
+
+        // Set Note properties
         note.setInterval(*interval);
+        note.setMaterial(*E, *rho);
+        note.setInputOutput(*xi, *xo);
+        note.setStringParams(juce::MidiMessage::getMidiNoteInHertz(midiNoteNumber), length, radius, *T60time);
+        note.setForceParameters(*intTime, 15.0f + (*velCurve) * (velocity-64.0f));
 
         /// ADSR
         env.reset();
@@ -215,9 +229,17 @@ private:
     int lim2;
     std::atomic<float>* T60time;
 
-    /// Gain
+    /// Variable Parameters
     std::atomic<float>* gain;
     std::atomic<float>* interval;
+    std::atomic<float>* velCurve;
+    std::atomic<float>* intTime;
+
+    std::atomic<float>* E;
+    std::atomic<float>* rho;
+    std::atomic<float>* xi;
+    std::atomic<float>* xo;
+
 
     /// ADSR
     juce::ADSR env;

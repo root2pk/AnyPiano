@@ -5,6 +5,8 @@
               addUsingNamespaceToJuceHeader="0" companyName="Ruthu Prem Kumar">
   <MAINGROUP id="gVuaI5" name="SynthPoly">
     <GROUP id="{12ACA159-2F44-E1B5-0A74-97815209556A}" name="Source">
+      <FILE id="SqWGCx" name="Note.cpp" compile="1" resource="0" file="Source/Note.cpp"/>
+      <FILE id="uXGnMZ" name="String.cpp" compile="1" resource="0" file="Source/String.cpp"/>
       <FILE id="q3HehU" name="Note.h" compile="0" resource="0" file="Source/Note.h"/>
       <FILE id="dp7o5W" name="Synth.h" compile="0" resource="0" file="Source/Synth.h"/>
       <FILE id="mT8fNl" name="Oscillator.h" compile="0" resource="0" file="Source/Oscillator.h"/>

@@ -67,6 +67,14 @@ private:
     std::atomic<float>* release;
     std::atomic<float>* gain;
     std::atomic<float>* interval;
+    std::atomic<float>* velCurve;
+    std::atomic<float>* intTime;
+
+    std::atomic<float>* youngsModulus;
+    std::atomic<float>* density;
+
+    std::atomic<float>* xi;
+    std::atomic<float>* xo;
 
     /// Synth parameters
     juce::Synthesiser synth;

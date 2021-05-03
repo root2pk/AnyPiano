@@ -21,87 +21,34 @@
 class Note {
 public:
 
-    ///* Destructor*/
-    //~Note() {
-    //    //delete noteSampleCount;
-    //    //delete forceSignal;
-    //}
     /* Process function for note which adds samples from str.process for each string(based on some interval) and returns the sample*/
-    float process() {
-        float sample = 0.0f;
-
-        for (int i = 0; i < numStrings; i++) {  
-
-            if (sampleCount >= interval*i) {
-
-                if (noteSampleCount[i] < durationInSamples) {
-                    str[i]->setForce(forceSignal[noteSampleCount[i]]);
-                }
-
-                else {
-                    str[i]->setForce(0.0f);
-                }
-
-                sample += str[i]->process();
-                noteSampleCount[i]++;
-            }
-        }
-        sampleCount++;
-        return sample;
-    }
+    float process();
 
     /* Sets the sample rate*/
-    void setSampleRate(float samplerate) {
-        sampleRate = samplerate;
-    }
+    void setSampleRate(float samplerate);
 
     /* Sets the parameters for each string*/
-    void setStringParams(float frequencyinHz, float lengthInMetres, float radiusInMillimetres, float T60TimeInSeconds){
-        freq = frequencyinHz;
-        L = lengthInMetres;
-        r = radiusInMillimetres/1000.0f;
-        T60 = T60TimeInSeconds;
-        for (int i = 0; i < numStrings; i++) {
-            str[i]->setsampleRate(sampleRate);
-            str[i]->setParameters(frequencyinHz + random.nextFloat(),L,r,T60);
-            str[i]->initGrid();
-        }
-    }
+    void setStringParams(float frequencyinHz, float lengthInMetres, float radiusInMillimetres, float T60TimeInSeconds);
+
+    /* Sets the string material properties (in SI units)*/
+    void setMaterial(float youngsModulus, float density);
+
+    /* Sets the input and output coordinates (0-1) */
+    void setInputOutput(float xi, float xo);
 
     /* Sets the parameters for input force*/
-    void setForceParameters(float durationInMilliseconds, float amplitudeInNewtons) {
-        // Set duration of force signal in samples
-        durationInSamples = round((durationInMilliseconds/1000.0f)*sampleRate);
-        // Maximum amplitude of force signal
-        famp = amplitudeInNewtons;
-        // Set parameters
-        inputForce.setDur(durationInSamples);
-        inputForce.setFamp(famp);
-
-        // Store forceSignal
-        forceSignal = inputForce.fullHann();
-    }
+    void setForceParameters(float durationInMilliseconds, float amplitudeInNewtons);
 
     /* Sets the number of strings in a note*/
-    void setNumStrings(int number){
-        numStrings = number;
-        for (int i = 0; i < numStrings; i++) {
-            str.push_back(new String);
-        }
-        noteSampleCount = new int[numStrings] {0};
-    }
+    void setNumStrings(int number);
 
-    int getNumString(){
-        return numStrings;
-    }
+    /* Returns the number of strings in a note*/
+    int getNumStrings();
 
     /* Set interval between string excitation in milliseconds(set SampleRate first)*/
-    void setInterval(float intervalInMilliseconds){
-        interval = round((intervalInMilliseconds/1000.0)*sampleRate);
-    }
-    float getInterval(){
-        return interval;
-    }
+    void setInterval(float intervalInMilliseconds);
+    float getInterval();
+
 private:
 
     // Members to pass on to String.h 
@@ -110,6 +57,8 @@ private:
     float L;
     float r;
     float T60;
+
+    // Vector of string objects
     std::vector<String*> str;
 
     // Members to pass on to Input Force

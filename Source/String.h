@@ -20,134 +20,52 @@ class String {
 public:
 
 	/* Destructor*/
-	~String() {
-		delete[] u0;
-		delete[] u1;
-		delete[] u2;
-	}
+	~String();
 
 	/* Process returns the signal at xo of the string for each sample using FDTD*/	
-	float process() {
-		updateGrid();
-		updateBoundary();
-		addForce();
-		float sample = u0[lo];
-		
-		// Copy array values after timestep
-		float* tempPtr = u2;
-		u2 = u1;
-		u1 = u0;
-		u0 = tempPtr;
-
-		return sample;
-	}
+	float process();
 
 	/* Updates the grid for n+1 timestep*/
-	void updateGrid() {
-		for (int l = lstart; l < lend; l++) {
-			u0[l] = (2 * u1[l] + param1 * u2[l] + lambdasq * (u1[l - 1] - 2 * u1[l] + u1[l + 1]) 
-				- musq * (u1[l + 2] - 4 * u1[l + 1] + 6 * u1[l] - 4 * u1[l - 1] + u1[l - 2]))/param2;
-		}
-
-	}
+	void updateGrid();
 
 	/* Updates the boundary for n+1 timestep*/
-	void updateBoundary() {
-		u0[0] = (2 * u1[0] + param1 * u2[0] + lambdasq * (-2 * u1[0] + u1[1])
-			- musq * (u1[2] - 4 * u1[1] + 5 * u1[0]))/param2;
-
-		u0[1] = (2 * u1[1] + param1 * u2[1] + lambdasq * (u1[0] - 2 * u1[1] + u1[2])
-			- musq * (u1[3] - 4 * u1[2] + 6 * u1[1] - 4 * u1[0]))/param2;
-
-		u0[N - 2] = (2 * u1[N - 2] + param1 * u2[N - 2] + lambdasq * (u1[N - 3] - 2 * u1[N - 2] + u1[N - 1])
-			- musq * (u1[N - 4] - 4 * u1[N - 3] + 6 * u1[N - 2] - 4 * u1[N - 1]))/param2;
-
-		u0[N - 1] = (2 * u1[N - 1] + param1 * u2[N - 1] + lambdasq * (-2 * u1[N - 1] + u1[N - 2])
-			- musq * (u1[N - 3] - 4 * u1[N - 2] + 5 * u1[N - 1]))/param2;
-	}
+	void updateBoundary();
 
 	/* Adds the input force at coordinate xi*/
-	void addForce() {
-		u0[li] += forceCoeff * force;
-	}
+	void addForce();
 
-	float getFrequency() {
-		return freq;
-
-	}
+	/* Returns the frequency of the string*/
+	float getFrequency();
 
 	/* Set sample rate*/
-	void setsampleRate(float samprate) {
-		SR = samprate;
-	}
-	float getsampleRate() {
-		return SR;
-	}
+	void setsampleRate(float samprate);
 
-	float getRadius() {
-		return r;
-	}
+	/* Returns the sample rate*/
+	float getsampleRate();
 
-	float getLength() {
-		return L;
-	}
+	/* Returns the radius of the string in metres*/
+	float getRadius();
 
+	/* Returns the length of the string in metres*/
+	float getLength();
 
-	float getT60() {
-		return T60;
-	}
+	/* Returns the T60 time of decay in seconds*/
+	float getT60();
 
 	/* Set Force*/
-	void setForce(float f) {
-		force = f;
-	}
-
+	void setForce(float f);
 
 	/* Sets Parameters of String */
-	void setParameters(float frequencyInHz,float lengthInMetres, float radiusInMetres, float T60InSeconds){
-		freq = frequencyInHz;
-		L = lengthInMetres;
-		r = radiusInMetres;
-		T60 = T60InSeconds;
-		
-		// Time step (1/sampleRate)
-		k = 1 / SR;
+	void setParameters(float frequencyInHz, float lengthInMetres, float radiusInMetres, float T60InSeconds);
 
-		// String Parameters
-		T = 4 * M_PI * rho * pow(L,2) * pow(freq,2) * pow(r,2);
-		A = M_PI * pow(r, 2);
-		I = 0.25 * M_PI * pow(r,4);
-		c = sqrt(T / (rho * A));
-		
-		// Loss Parameters
-		sig = 6 * log(10) / T60;
-		param1 = sig * k - 1.0f;
-		param2 = sig * k + 1.0f;
-		K = sqrt(E * I / (rho * A));
-
-		// Stability condition
-		hmin = sqrt(0.5 * (pow(c, 2) * pow(k, 2) + sqrt(pow(c, 4) * pow(k, 4) + 16 * pow(K, 2) * pow(k, 2))));
-		N = floor(L / hmin);
-		h = L / float(N);
-		lambdasq = pow((c * k / h),2);
-		musq = k * k * K * K/ pow(h, 4);	 
-
-		// Input Force
-		forceCoeff = pow(k, 2) / (rho * A * h);
-
-	}
-
+	/* Sets the coordinates for excitation and output (0-1)*/
+	void setExcCoordinates(float inCoordinate, float outCoordinate);
+	
+	/* Sets the material properties of the string(SI units)*/
+	void setMaterial(float youngsModulus, float density);
+	
 	/* Initialises grids (call only after setParameters() has been called)*/
-	void initGrid() {
-
-		u0 = new float[N] {0};
-		u1 = new float[N] {0};
-		u2 = new float[N] {0};
-
-		lend = N - 2;
-		li = floor(xi * N);
-		lo = floor(xo * N);	
-	}
+	void initGrid();
 
 
 // Private variables
@@ -166,8 +84,8 @@ private:
 	float param1;
 	float param2;
 
-	float rho = 7860;                   // Density
-	float E = 1.95e11;                  // Young's Modulus
+	float rho;				            // Density
+	float E;							// Young's Modulus
 		
 	float K;							// Stiffness Constant
 	float k;							// Timestep
@@ -181,9 +99,9 @@ private:
 	float musq;							// Numerical Stiffness Constant (squared)
 
 	// Grid Parameters
-	float *u0;
-	float *u1;
-	float *u2;
+	float *u0;							// State at time n+1
+	float *u1;							// State at time n
+	float *u2;							// State at time n-1
 
 	int N;                              // Number of Grid spaces
 	int lstart = 2;                     // Start index
@@ -193,8 +111,8 @@ private:
 
 	// Input force parameters
 	float force;                        // Force at current timestep (N)
-	float xi = 0.3;                     // Coordinate of excitation (striking/plucking point)(0-1)
-	float xo = 0.5;						// Coordinate of output (0-1)
+	float xi;                           // Coordinate of excitation (striking/plucking point)(0-1)
+	float xo;							// Coordinate of output (0-1)
 	float forceCoeff;                   // Force Coefficient 
 
 };
