@@ -66,6 +66,7 @@ private:
     std::atomic<float>* sustain;
     std::atomic<float>* release;
     std::atomic<float>* gain;
+    std::atomic<float>* interval;
 
     /// Synth parameters
     juce::Synthesiser synth;

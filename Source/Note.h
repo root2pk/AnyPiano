@@ -23,8 +23,8 @@ public:
 
     ///* Destructor*/
     //~Note() {
-    //    delete[] noteSampleCount;
-    //    delete[] forceSignal;
+    //    //delete noteSampleCount;
+    //    //delete forceSignal;
     //}
     /* Process function for note which adds samples from str.process for each string(based on some interval) and returns the sample*/
     float process() {
@@ -63,26 +63,26 @@ public:
         T60 = T60TimeInSeconds;
         for (int i = 0; i < numStrings; i++) {
             str[i]->setsampleRate(sampleRate);
-            str[i]->setFrequency(freq + random.nextFloat());
-            str[i]->setLength(L);
-            str[i]->setRadius(r);
-            str[i]->setT60(T60);
-            str[i]->setParameters();
+            str[i]->setParameters(frequencyinHz + random.nextFloat(),L,r,T60);
             str[i]->initGrid();
         }
     }
 
     /* Sets the parameters for input force*/
     void setForceParameters(float durationInMilliseconds, float amplitudeInNewtons) {
+        // Set duration of force signal in samples
         durationInSamples = round((durationInMilliseconds/1000.0f)*sampleRate);
+        // Maximum amplitude of force signal
         famp = amplitudeInNewtons;
+        // Set parameters
         inputForce.setDur(durationInSamples);
         inputForce.setFamp(famp);
 
+        // Store forceSignal
         forceSignal = inputForce.fullHann();
     }
 
-
+    /* Sets the number of strings in a note*/
     void setNumStrings(int number){
         numStrings = number;
         for (int i = 0; i < numStrings; i++) {

@@ -31,6 +31,7 @@ std::make_unique<juce::AudioParameterFloat>("attack","Attack(s)",0.01f, 2.0f, 0.
 std::make_unique<juce::AudioParameterFloat>("decay","Decay(s)",0.01f, 2.0f, 0.05f),
 std::make_unique<juce::AudioParameterFloat>("sustain","Sustain(level)",0.1f, 1.0f, 0.5f),
 std::make_unique<juce::AudioParameterFloat>("release","Release(s)",0.01f, 5.0f, 0.2f),
+std::make_unique<juce::AudioParameterFloat>("interval","Interval(milliseconds)",1.0f, 100.0f, 20.0f),
 //Add more
 })
 
@@ -43,6 +44,7 @@ std::make_unique<juce::AudioParameterFloat>("release","Release(s)",0.01f, 5.0f, 
     sustain = parameters.getRawParameterValue("sustain");
     release = parameters.getRawParameterValue("release");
     gain = parameters.getRawParameterValue("gain");
+    interval = parameters.getRawParameterValue("interval");
 
 
 
@@ -56,7 +58,7 @@ std::make_unique<juce::AudioParameterFloat>("release","Release(s)",0.01f, 5.0f, 
     // Variable Parameters
     for (int i = 0; i < voiceCount; i++) {
         SynthVoice* v = dynamic_cast<SynthVoice*>(synth.getVoice(i));
-        v->setParamPointers(T60time, gain);
+        v->setParamPointers(T60time, gain, interval);
         v->setADSRPointers(attack, decay, sustain, release);
     }
 }

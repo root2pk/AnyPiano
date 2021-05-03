@@ -56,9 +56,10 @@ public:
 
     }
 
-    void setParamPointers(std::atomic<float>* T60in, std::atomic<float>* G){
+    void setParamPointers(std::atomic<float>* T60in, std::atomic<float>* G, std::atomic<float>* intervalIn){
         T60time = T60in;
         gain = G;
+        interval = intervalIn;
     }
 
     void setADSRPointers(std::atomic<float>* A, std::atomic<float>* D, std::atomic<float>* S, std::atomic<float>* R) {
@@ -100,7 +101,7 @@ public:
         float radius = (-2.08333e-03) * float(midiNoteNumber) + 0.62875;
         note.setStringParams(juce::MidiMessage::getMidiNoteInHertz(midiNoteNumber), length, radius, *T60time);
         note.setForceParameters(1.2, 5.0f);
-        note.setInterval(20);
+        note.setInterval(*interval);
 
         /// ADSR
         env.reset();
@@ -167,7 +168,7 @@ public:
                 for (int chan = 0; chan < outputBuffer.getNumChannels(); chan++)
                 {
                     // The output sample is scaled by gain G 
-                    outputBuffer.addSample(chan, sampleIndex, currentSample * 2000.0f);
+                    outputBuffer.addSample(chan, sampleIndex, currentSample * G);
                 }
 
                 if (ending) {
@@ -216,6 +217,7 @@ private:
 
     /// Gain
     std::atomic<float>* gain;
+    std::atomic<float>* interval;
 
     /// ADSR
     juce::ADSR env;

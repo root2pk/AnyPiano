@@ -23,7 +23,7 @@ class Hann {
 public:
 	///* Destructor*/
 	//~Hann() {
-	//	delete[] f;
+	//	delete f;
 	//}
 
 	/* Returns a full Hann window with duration dur(in samples) and peak amplitude famp*/
@@ -64,7 +64,7 @@ public:
 private:
 
 	float *f;                           // Force signal
-	float famp;                         //  Peak amplitude of input (N)
+	float famp;                         // Peak amplitude of input (N)
 	int dur;                            // Duration of input in samples
 
 };

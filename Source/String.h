@@ -71,10 +71,6 @@ public:
 		u0[li] += forceCoeff * force;
 	}
 
-	/*	Sets frequency	*/
-	void setFrequency(float f) {
-		freq = f;
-	}
 	float getFrequency() {
 		return freq;
 
@@ -88,26 +84,15 @@ public:
 		return SR;
 	}
 
-	/* Set radius */
-	void setRadius(float rad) {
-		r = rad;
-	}
 	float getRadius() {
 		return r;
 	}
 
-	/* Set Length */
-	void setLength(float length) {
-		L = length;
-	}
 	float getLength() {
 		return L;
 	}
 
-	/* Set Length */
-	void setT60(float T60time) {
-		T60 = T60time;
-	}
+
 	float getT60() {
 		return T60;
 	}
@@ -118,9 +103,13 @@ public:
 	}
 
 
-	/* Sets Parameters of String (call only after length, radius, frequency, sampleRate and T60 time have been set) */
-	void setParameters(){
-
+	/* Sets Parameters of String */
+	void setParameters(float frequencyInHz,float lengthInMetres, float radiusInMetres, float T60InSeconds){
+		freq = frequencyInHz;
+		L = lengthInMetres;
+		r = radiusInMetres;
+		T60 = T60InSeconds;
+		
 		// Time step (1/sampleRate)
 		k = 1 / SR;
 
