@@ -61,7 +61,7 @@ void Note::setInputOutput(float xi, float xo) {
     }
 }
 
-void Note::setForceParameters(float durationInMilliseconds, float amplitudeInNewtons) {
+void Note::setForceParameters(float durationInMilliseconds, float amplitudeInNewtons, bool choice) {
 
     // Set duration of force signal in samples
     durationInSamples = round((durationInMilliseconds / 1000.0f) * sampleRate);
@@ -71,8 +71,16 @@ void Note::setForceParameters(float durationInMilliseconds, float amplitudeInNew
     inputForce.setDur(durationInSamples);
     inputForce.setFamp(famp);
 
+    // Struck or Plucked
+    excChoice = choice;
+
     // Store forceSignal
-    forceSignal = inputForce.fullHann();
+    if (excChoice == true) {
+        forceSignal = inputForce.fullHann();
+    }
+    else {
+        forceSignal = inputForce.halfHann();
+    }
 }
 
 void Note::setNumStrings(int number) {

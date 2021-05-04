@@ -54,32 +54,37 @@ public:
 
     }
 
-    void setParamPointers(std::atomic<float>* T60in, std::atomic<float>* G, std::atomic<float>* intervalIn, 
-        std::atomic<float>* velCurveIn,std::atomic<float>* intTimeIn, 
-        std::atomic<float>* EIn, std::atomic<float>* rhoIn,
-        std::atomic<float>* xiIn, std::atomic<float>* xoIn,
-        std::atomic<float>* lengthParamIn, std::atomic<float>* radiusParamIn,
-        std::atomic<float>* lim1In, std::atomic<float>* lim2In){
-        T60time = T60in;
-        gain = G;
-        interval = intervalIn;
+    void setParamPointers(std::atomic<float>* T60In, std::atomic<float>* gainIn,
+        std::atomic<float>* velCurveIn, std::atomic<float>* choiceIn,
+        std::atomic<float>* EIn, std::atomic<float>* rhoIn){
+
+        T60time = T60In;
+        gain = gainIn;
+        choice = choiceIn;
+
         velCurve = velCurveIn;
-        intTime = intTimeIn;
 
         E = EIn;
         rho = rhoIn;
+    }
+
+    void setNotePointers(std::atomic<float>* intervalIn, std::atomic<float>* intTimeIn,
+        std::atomic<float>* xiIn, std::atomic<float>* xoIn,
+        std::atomic<float>* lengthParamIn, std::atomic<float>* radiusParamIn,
+        std::atomic<float>* lim1In, std::atomic<float>* lim2In) {
+
+        interval = intervalIn;
+        intTime = intTimeIn;
 
         xi = xiIn;
         xo = xoIn;
 
         lengthParam = lengthParamIn;
         radiusParam = radiusParamIn;
-        
+
         lim1 = lim1In;
         lim2 = lim2In;
     }
-
-    
 
     void setADSRPointers(std::atomic<float>* A, std::atomic<float>* D, std::atomic<float>* S, std::atomic<float>* R) {
         attack = A;
@@ -101,25 +106,35 @@ public:
         playing = true;
         ending = false;
 
-        // Note
-        if (midiNoteNumber < round(*lim1)) {
+        // Number of strings in Note
+        if (midiNoteNumber < int(*lim1)) {
             note.setNumStrings(1);
         }
-        else if(midiNoteNumber < round(*lim2)) {
+        else if(midiNoteNumber < int(*lim2)) {
             note.setNumStrings(2);
         }
         else {
             note.setNumStrings(3);
         }
+
+        // Struck or plucked
+        if (*choice < 0.5f) {
+            excChoice = true;       // Struck
+        }
+        else {
+            excChoice = false;      // Plucked
+        }
+
+        // Set length and radius of strings of note
         float length =  (*lengthParam) * (-0.019196429 * float(midiNoteNumber) + 1.815625);
         float radius = (*radiusParam) * (-2.08333e-03 * float(midiNoteNumber) + 0.62875);
-
+        
         // Set Note properties
         note.setInterval(*interval);
         note.setMaterial((*E) * 1e9, *rho);
         note.setInputOutput(*xi, *xo);
         note.setStringParams(juce::MidiMessage::getMidiNoteInHertz(midiNoteNumber), length, radius, *T60time);
-        note.setForceParameters(*intTime, 15.0f + (*velCurve) * (velocity-64.0f));
+        note.setForceParameters(*intTime, 15.0f + (*velCurve) * (2.0f * velocity - 0.5f), excChoice);
 
         /// ADSR
         env.reset();
@@ -222,10 +237,13 @@ private:
 
     /// Note object
     Note note;
+    bool excChoice;
     std::atomic<float>* T60time;
 
     /// Variable Parameters
     std::atomic<float>* gain;
+    std::atomic<float>* choice;
+
     std::atomic<float>* interval;
     std::atomic<float>* velCurve;
     std::atomic<float>* intTime;

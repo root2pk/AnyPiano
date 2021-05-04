@@ -82,6 +82,7 @@ private:
     std::atomic<float>* lim1;
     std::atomic<float>* lim2;
 
+    std::atomic<float>* choice;
 
     /// Synth parameters
     juce::Synthesiser synth;

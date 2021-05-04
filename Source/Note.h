@@ -37,7 +37,7 @@ public:
     void setInputOutput(float xi, float xo);
 
     /* Sets the parameters for input force*/
-    void setForceParameters(float durationInMilliseconds, float amplitudeInNewtons);
+    void setForceParameters(float durationInMilliseconds, float amplitudeInNewtons, bool choice);
 
     /* Sets the number of strings in a note*/
     void setNumStrings(int number);
@@ -61,10 +61,11 @@ private:
     // Vector of string objects
     std::vector<String*> str;
 
-    // Members to pass on to Input Force
+    // Input Force parameters
     int durationInSamples;
     float famp;
     float *forceSignal;
+    bool excChoice;
     Hann inputForce;
 
     // Random
