@@ -3,7 +3,7 @@
 
     Note.h
     Created: 29 Apr 2021 
-    Author:  B119185
+    Author:  Ruthu Prem Kumar
         
     Class to create an instance of a 'note', which is a combination of strings.
     The number of strings is based on where on the keyboard the note lies.

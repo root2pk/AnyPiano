@@ -1,5 +1,8 @@
 /*
   ==============================================================================
+	
+	String.h
+	Author:  Ruthu Prem Kumar
 
 	 Class to create instances of a string using finite-difference time-domain simulation
 	Set parameters of the string using setParameters()

@@ -2,7 +2,7 @@
   ==============================================================================
 
 	Hann.h
-	Author:  B119185
+	Author:  Ruthu Prem Kumar
 
 	Class to create instances of a Hann object
 	Set duration of the Hann window in samples, and peak amplitude using setDur() and setFamp()

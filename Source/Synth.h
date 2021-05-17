@@ -3,7 +3,7 @@
 
     Synth.h
     Created: 30 Apr 2021 
-    Author: B119185
+    Author: Ruthu Prem Kumar
 
     Class to control Synthesiser voices and Synthesiser sounds.
     Accesses Note.h to create instances of notes, and plays a sample-by-sample 
