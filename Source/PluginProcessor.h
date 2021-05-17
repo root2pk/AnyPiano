@@ -60,29 +60,41 @@ public:
 private:
     /// Audio Processor value parameters
     juce::AudioProcessorValueTreeState parameters;
-    std::atomic<float>* T60time;
+
+    // ADSR
     std::atomic<float>* attack;
     std::atomic<float>* decay;
     std::atomic<float>* sustain;
     std::atomic<float>* release;
-    std::atomic<float>* gain;
-    std::atomic<float>* interval;
-    std::atomic<float>* velCurve;
-    std::atomic<float>* intTime;
 
+    // Variable Parameters
+    std::atomic<float>* T60time;
+    std::atomic<float>* gain;
+    std::atomic<float>* choice;
+
+    // Note properties
+    std::atomic<float>* interval;
+    std::atomic<float>* freqParam;
+
+    // Velocity Properties
+    std::atomic<float>* velCurve;
+    std::atomic<float>* baseVel; 
+
+    // Material Properties
     std::atomic<float>* youngsModulus;
     std::atomic<float>* density;
 
+    // Excitation Properties
     std::atomic<float>* xi;
     std::atomic<float>* xo;
 
+    // Length and Radius
     std::atomic<float>* lengthParam;
     std::atomic<float>* radiusParam;
     
+    // MIDI limits for one and two strings per note
     std::atomic<float>* lim1;
     std::atomic<float>* lim2;
-
-    std::atomic<float>* choice;
 
     /// Synth parameters
     juce::Synthesiser synth;

@@ -2,8 +2,8 @@
 ==============================================================================
 
 String.cpp
-Created: 3 May 2021 9:45:00pm
-Author:  Ruthu
+Created: 3 May 2021 
+Author:  B119185
 
 ==============================================================================
 */
@@ -17,9 +17,13 @@ String::~String() {
 }
 
 float String::process() {
+	// Updates the grid
 	updateGrid();
+	// Updates the boundaries using simply supported condition
 	updateBoundary();
+	// Adds the force value at xi
 	addForce();
+	// Sample is taken from xo
 	float sample = u0[lo];
 
 	// Copy array values after timestep
@@ -32,6 +36,7 @@ float String::process() {
 }
 
 void String::updateGrid() {
+	// Grid update for interior elements
 	for (int l = lstart; l < lend; l++) {
 		u0[l] = (2 * u1[l] + param1 * u2[l] + lambdasq * (u1[l - 1] - 2 * u1[l] + u1[l + 1])
 			- musq * (u1[l + 2] - 4 * u1[l + 1] + 6 * u1[l] - 4 * u1[l - 1] + u1[l - 2])) / param2;
@@ -40,6 +45,7 @@ void String::updateGrid() {
 }
 
 void String::updateBoundary() {
+	// Grid update for boundary elements
 	u0[0] = (2 * u1[0] + param1 * u2[0] + lambdasq * (-2 * u1[0] + u1[1])
 		- musq * (u1[2] - 4 * u1[1] + 5 * u1[0])) / param2;
 
@@ -54,6 +60,7 @@ void String::updateBoundary() {
 }
 
 void String::addForce() {
+	// Adds force at excitation coordinate
 	u0[li] += forceCoeff * force;
 }
 
@@ -82,6 +89,7 @@ float String::getT60() {
 }
 
 void String::setForce(float f) {
+	// Sets the value for force, to be called before process() for each sample
 	force = f;
 }
 
@@ -129,7 +137,7 @@ void String::setMaterial(float youngsModulus, float density) {
 }
 
 void String::initGrid() {
-
+	// Initialise an N-size dynamic array for n-1,n and n+1 states of the string 
 	u0 = new float[N] {0};
 	u1 = new float[N] {0};
 	u2 = new float[N] {0};

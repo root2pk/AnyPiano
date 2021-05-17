@@ -1,13 +1,19 @@
-#pragma once
-/**
- Class to create instances of a string usin finite-difference tim-domain simulation
- Set frequency, radius of string, length of string and T60 time of string
- Then call setParameters() and initGrid() to initialise the grid for the string
- setForce() must also be called to set the input force
+/*
+  ==============================================================================
 
- process() can then be called to return the per sample output of the string at location xo 
+	 Class to create instances of a string using finite-difference time-domain simulation
+	Set parameters of the string using setParameters()
+	Set excitation coordinates using setExcCoordinates()
+	Set material properties using setMaterial()
+	Call initGrid() to initialise the grid for the string
+	setForce() must also be called to set the input force for the current sample
 
+	process() can then be called to return the per sample output of the string at location xo 
+
+  ==============================================================================
 */
+
+#pragma once
 #include<math.h>
 #include<vector>
 
@@ -61,10 +67,10 @@ public:
 	/* Sets the coordinates for excitation and output (0-1)*/
 	void setExcCoordinates(float inCoordinate, float outCoordinate);
 	
-	/* Sets the material properties of the string(SI units)*/
+	/* Sets the material properties of the string (SI units)*/
 	void setMaterial(float youngsModulus, float density);
 	
-	/* Initialises grids (call only after setParameters() has been called)*/
+	/* Initialises grids */
 	void initGrid();
 
 

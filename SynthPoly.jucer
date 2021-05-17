@@ -1,16 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<JUCERPROJECT id="oI8j3h" name="SynthPoly" projectType="audioplug" useAppConfig="0"
+<JUCERPROJECT id="oI8j3h" name="APPlugin" projectType="audioplug" useAppConfig="0"
               displaySplashScreen="1" jucerFormatVersion="1" pluginCharacteristicsValue="pluginIsSynth,pluginWantsMidiIn"
-              addUsingNamespaceToJuceHeader="0" companyName="Ruthu Prem Kumar">
-  <MAINGROUP id="gVuaI5" name="SynthPoly">
+              addUsingNamespaceToJuceHeader="0" companyName="B119185" pluginFormats="buildAU,buildStandalone,buildVST3">
+  <MAINGROUP id="gVuaI5" name="APPlugin">
     <GROUP id="{12ACA159-2F44-E1B5-0A74-97815209556A}" name="Source">
-      <FILE id="SqWGCx" name="Note.cpp" compile="1" resource="0" file="Source/Note.cpp"/>
-      <FILE id="uXGnMZ" name="String.cpp" compile="1" resource="0" file="Source/String.cpp"/>
       <FILE id="q3HehU" name="Note.h" compile="0" resource="0" file="Source/Note.h"/>
+      <FILE id="SqWGCx" name="Note.cpp" compile="1" resource="0" file="Source/Note.cpp"/>
       <FILE id="dp7o5W" name="Synth.h" compile="0" resource="0" file="Source/Synth.h"/>
-      <FILE id="mT8fNl" name="Oscillator.h" compile="0" resource="0" file="Source/Oscillator.h"/>
       <FILE id="sJe7nb" name="String.h" compile="0" resource="0" file="Source/String.h"/>
+      <FILE id="uXGnMZ" name="String.cpp" compile="1" resource="0" file="Source/String.cpp"/>
       <FILE id="lg2uZ1" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
       <FILE id="K1fr5O" name="PluginProcessor.h" compile="0" resource="0"

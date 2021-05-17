@@ -2,8 +2,12 @@
   ==============================================================================
 
     Synth.h
-    Created: 30 Apr 2021 2:28:16pm
-    Author:  Ruthu
+    Created: 30 Apr 2021 
+    Author: B119185
+
+    Class to control Synthesiser voices and Synthesiser sounds.
+    Accesses Note.h to create instances of notes, and plays a sample-by-sample 
+    output from Note.process()
 
   ==============================================================================
 */
@@ -11,7 +15,6 @@
 #pragma once
 #include "JuceHeader.h"
 #include "Note.h"
-#include "Oscillator.h"
 
 // ===========================
 // ===========================
@@ -25,19 +28,15 @@ public:
 };
 
 
-
-
 // =================================
 // =================================
-// Synthesiser Voice - Synth code goes in here
+// Synthesiser Voice 
 
 /*!
  @class SynthVoice
  @abstract struct defining the DSP associated with a specific voice.
  @discussion multiple SynthVoice objects will be created by the Synthesiser so that it can be played polyphicially
 
- @namespace none
- @updated 2019-06-18
  */
 class SynthVoice : public juce::SynthesiserVoice
 {
@@ -46,7 +45,7 @@ public:
 
     void init(float sampleRate) {
         
-        //Note
+        /// Note
         note.setSampleRate(sampleRate);
         
         /// ADSR
@@ -54,27 +53,30 @@ public:
 
     }
 
+    /* */
     void setParamPointers(std::atomic<float>* T60In, std::atomic<float>* gainIn,
-        std::atomic<float>* velCurveIn, std::atomic<float>* choiceIn,
+        std::atomic<float>* velCurveIn, std::atomic<float>* baseVelIn,
+        std::atomic<float>* choiceIn,
         std::atomic<float>* EIn, std::atomic<float>* rhoIn){
 
         T60time = T60In;
         gain = gainIn;
         choice = choiceIn;
 
+        baseVel = baseVelIn;
         velCurve = velCurveIn;
 
         E = EIn;
         rho = rhoIn;
     }
 
-    void setNotePointers(std::atomic<float>* intervalIn, std::atomic<float>* intTimeIn,
+    void setNotePointers(std::atomic<float>* intervalIn, std::atomic<float>* freqParamIn, 
         std::atomic<float>* xiIn, std::atomic<float>* xoIn,
         std::atomic<float>* lengthParamIn, std::atomic<float>* radiusParamIn,
         std::atomic<float>* lim1In, std::atomic<float>* lim2In) {
 
         interval = intervalIn;
-        intTime = intTimeIn;
+        freqParam = freqParamIn;
 
         xi = xiIn;
         xo = xoIn;
@@ -86,6 +88,7 @@ public:
         lim2 = lim2In;
     }
 
+    /* Set pointers for ADSR variable parameters*/
     void setADSRPointers(std::atomic<float>* A, std::atomic<float>* D, std::atomic<float>* S, std::atomic<float>* R) {
         attack = A;
         decay = D;
@@ -106,7 +109,7 @@ public:
         playing = true;
         ending = false;
 
-        // Number of strings in Note
+        // Number of strings in Note (based on lim1 and lim2)
         if (midiNoteNumber < int(*lim1)) {
             note.setNumStrings(1);
         }
@@ -117,7 +120,8 @@ public:
             note.setNumStrings(3);
         }
 
-        // Struck or plucked
+        bool excChoice;
+        /// Struck or plucked
         if (*choice < 0.5f) {
             excChoice = true;       // Struck
         }
@@ -126,6 +130,7 @@ public:
         }
 
         // Set length and radius of strings of note
+        float frequency = juce::MidiMessage::getMidiNoteInHertz(midiNoteNumber) + 0.1443 * midiNoteNumber - 7.766;
         float length =  (*lengthParam) * (-0.019196429 * float(midiNoteNumber) + 1.815625);
         float radius = (*radiusParam) * (-2.08333e-03 * float(midiNoteNumber) + 0.62875);
         
@@ -133,8 +138,8 @@ public:
         note.setInterval(*interval);
         note.setMaterial((*E) * 1e9, *rho);
         note.setInputOutput(*xi, *xo);
-        note.setStringParams(juce::MidiMessage::getMidiNoteInHertz(midiNoteNumber), length, radius, *T60time);
-        note.setForceParameters(*intTime, 15.0f + (*velCurve) * (2.0f * velocity - 0.5f), excChoice);
+        note.setStringParams(frequency, *freqParam, length, radius, *T60time);
+        note.setForceParameters(3.0 - 2.0 * velocity, *baseVel + (*velCurve) * (2.0f * velocity - 0.5f), excChoice);
 
         /// ADSR
         env.reset();
@@ -176,7 +181,7 @@ public:
 
         if (playing) // check to see if this voice should be playing
         {
-            /// ADSR variable parameters
+            /// ADSR variable parameters (variable while note is playing)
             juce::ADSR::Parameters envParams;
             envParams.attack = *attack;
             envParams.decay = *decay;
@@ -184,25 +189,28 @@ public:
             envParams.release = *release;
             env.setParameters(envParams);
 
+            /// Gain value
             float G = *gain;
 
             // iterate through the necessary number of samples (from startSample up to startSample + numSamples)
             for (int sampleIndex = startSample; sampleIndex < (startSample + numSamples); sampleIndex++)
             {
-                // your sample-by-sample DSP code here!
-                // An example white noise generater as a placeholder - replace with your own code
+                // Sample-by-sample DSP code here!
 
+                // Get ADSR envelope value
                 float envVal = env.getNextSample();
 
+                // Get currentSample from note.process()
                 float currentSample = envVal * note.process();
 
-                // for each channel, write the currentSample float to the output
+                // For each channel, write the currentSample float to the output
                 for (int chan = 0; chan < outputBuffer.getNumChannels(); chan++)
                 {
                     // The output sample is scaled by gain G 
                     outputBuffer.addSample(chan, sampleIndex, currentSample * G);
                 }
 
+                // Check if the end of the note has been reached
                 if (ending) {
                     if (envVal < 0.001f) {
                         clearCurrentNote();
@@ -218,7 +226,7 @@ public:
     void controllerMoved(int, int) override {}
     //--------------------------------------------------------------------------
     /**
-     Can this voice play a sound. I wouldn't worry about this for the time being
+     Can this voice play a sound. 
 
      @param sound a juce::SynthesiserSound* base class pointer
      @return sound cast as a pointer to an instance of SynthSound
@@ -230,34 +238,41 @@ public:
     //--------------------------------------------------------------------------
 private:
     //--------------------------------------------------------------------------
-    // Set up any necessary variables here
-    /// Should the voice be playing?
+
     bool playing = false;
     bool ending = false;
 
     /// Note object
     Note note;
-    bool excChoice;
-    std::atomic<float>* T60time;
 
     /// Variable Parameters
-    std::atomic<float>* gain;
-    std::atomic<float>* choice;
+    std::atomic<float>* T60time;                                    // T60 time
+    std::atomic<float>* gain;                                       // Gain
+    std::atomic<float>* choice;                                     // Float value for struck or plucked
 
-    std::atomic<float>* interval;
-    std::atomic<float>* velCurve;
-    std::atomic<float>* intTime;
+    // Note properties
+    std::atomic<float>* interval;                                   // Interval between string strikes in note
+    std::atomic<float>* freqParam;                                  // Frequency randomising scaler
 
-    std::atomic<float>* E;
-    std::atomic<float>* rho;
-    std::atomic<float>* xi;
-    std::atomic<float>* xo;
+    // Velocity
+    std::atomic<float>* velCurve;                                   // Velocity scaling
+    std::atomic<float>* baseVel;                                    // Least value for input force (N)
 
-    std::atomic<float>* lengthParam;
-    std::atomic<float>* radiusParam;
+    // Material Properties
+    std::atomic<float>* E;                                          // Young's Modulus
+    std::atomic<float>* rho;                                        // Density
 
-    std::atomic<float>* lim1;
-    std::atomic<float>* lim2;
+    // Excitation properties
+    std::atomic<float>* xi;                                         // Coordinate of excitation
+    std::atomic<float>* xo;                                         // Coordinate of output
+
+
+    // Physical properties
+    std::atomic<float>* lengthParam;                                // Parameter to adjust length of strings                                  
+    std::atomic<float>* radiusParam;                                // Parameter to adjust radius of strings
+
+    std::atomic<float>* lim1;                                       // MIDI range till which note has 1 strings
+    std::atomic<float>* lim2;                                       // MIDI range till which note has 2 strings
 
     /// ADSR
     juce::ADSR env;

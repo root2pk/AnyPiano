@@ -2,7 +2,7 @@
   ==============================================================================
 
 	Hann.h
-	Author:  Ruthu
+	Author:  B119185
 
 	Class to create instances of a Hann object
 	Set duration of the Hann window in samples, and peak amplitude using setDur() and setFamp()
@@ -21,10 +21,7 @@
 
 class Hann {
 public:
-	///* Destructor*/
-	//~Hann() {
-	//	delete f;
-	//}
+
 
 	/* Returns a full Hann window with duration dur(in samples) and peak amplitude famp*/
 	float* fullHann() {

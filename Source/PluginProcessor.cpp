@@ -26,15 +26,12 @@ parameters(*this, nullptr, "ParamTree", {
 // Parameter layout 
 // id, description, min val, max val, default val
 std::make_unique<juce::AudioParameterFloat>("gain","Gain",0.5f, 200.0f, 50.0f),
-std::make_unique<juce::AudioParameterFloat>("choice","Struck or Plucked",0.0f,1.0f,0.1f),
+std::make_unique<juce::AudioParameterFloat>("choice","Struck or Plucked(0 or 1)",0.0f,1.0f,0.1f),
 std::make_unique<juce::AudioParameterFloat>("T60time","T60(s)",1.0f, 10.0f, 5.0f),
-std::make_unique<juce::AudioParameterFloat>("attack","Attack(s)",0.01f, 2.0f, 0.05f),
-std::make_unique<juce::AudioParameterFloat>("decay","Decay(s)",0.01f, 2.0f, 0.05f),
-std::make_unique<juce::AudioParameterFloat>("sustain","Sustain(level)",0.1f, 1.0f, 0.5f),
-std::make_unique<juce::AudioParameterFloat>("release","Release(s)",0.01f, 5.0f, 0.2f),
 std::make_unique<juce::AudioParameterFloat>("interval","Interval(milliseconds)",0.0f, 1000.0f, 20.0f),
+std::make_unique<juce::AudioParameterFloat>("freqParam","Frequency Random Parameter",0.0f, 10.0f, 1.0f),
+std::make_unique<juce::AudioParameterFloat>("baseVel","Strike force(N)",0.0f, 100.0f, 15.0f),
 std::make_unique<juce::AudioParameterFloat>("velCurve","Velocity Curve",0.0f, 15.0f, 5.0f),
-std::make_unique<juce::AudioParameterFloat>("intTime","Hammer Interaction Time(milliseconds)", 0.5f, 3.5f, 1.0f),
 std::make_unique<juce::AudioParameterFloat>("youngsModulus","Young's Modulus(GPa)",10.0f, 1000.0f, 190.0f),
 std::make_unique<juce::AudioParameterFloat>("density","Density (kg/m^3)",1000.0f, 20000.0f, 8000.0f),
 std::make_unique<juce::AudioParameterFloat>("xi","Striking Point",0.01f, 0.99f, 0.3f),
@@ -43,7 +40,10 @@ std::make_unique<juce::AudioParameterFloat>("lengthParam","Length",0.1f, 10.0f, 
 std::make_unique<juce::AudioParameterFloat>("radiusParam","Radius",0.1f, 10.0f, 1.0f),
 std::make_unique<juce::AudioParameterFloat>("lim1","MIDI limit for 1 string note", 1, 127, 14),
 std::make_unique<juce::AudioParameterFloat>("lim2","MIDI limit for 2 string note", 1, 127, 30),
-//Add more
+std::make_unique<juce::AudioParameterFloat>("attack","Attack(s)",0.01f, 2.0f, 0.05f),
+std::make_unique<juce::AudioParameterFloat>("decay","Decay(s)",0.01f, 2.0f, 0.05f),
+std::make_unique<juce::AudioParameterFloat>("sustain","Sustain(level)",0.1f, 1.0f, 0.5f),
+std::make_unique<juce::AudioParameterFloat>("release","Release(s)",0.01f, 5.0f, 0.2f),
 })
 
 {   // Constructor
@@ -51,19 +51,22 @@ std::make_unique<juce::AudioParameterFloat>("lim2","MIDI limit for 2 string note
      /// Audio Processor Value Parameters
     gain = parameters.getRawParameterValue("gain");
     choice = parameters.getRawParameterValue("choice");
-
     T60time = parameters.getRawParameterValue("T60time");
+
     attack = parameters.getRawParameterValue("attack");
     decay = parameters.getRawParameterValue("decay");
     sustain = parameters.getRawParameterValue("sustain");
     release = parameters.getRawParameterValue("release");
     
     interval = parameters.getRawParameterValue("interval");
+    freqParam = parameters.getRawParameterValue("freqParam");
+
     velCurve = parameters.getRawParameterValue("velCurve");
-    intTime = parameters.getRawParameterValue("intTime");
+    baseVel = parameters.getRawParameterValue("baseVel");
 
     youngsModulus = parameters.getRawParameterValue("youngsModulus");
     density = parameters.getRawParameterValue("density");
+
     xi = parameters.getRawParameterValue("xi");
     xo = parameters.getRawParameterValue("xo");
 
@@ -83,8 +86,8 @@ std::make_unique<juce::AudioParameterFloat>("lim2","MIDI limit for 2 string note
     // Variable Parameters
     for (int i = 0; i < voiceCount; i++) {
         SynthVoice* v = dynamic_cast<SynthVoice*>(synth.getVoice(i));
-        v->setParamPointers(T60time, gain, velCurve, choice, youngsModulus, density);
-        v->setNotePointers(interval, intTime, xi, xo, lengthParam, radiusParam, lim1, lim2);
+        v->setParamPointers(T60time, gain, velCurve, baseVel, choice, youngsModulus, density);
+        v->setNotePointers(interval, freqParam, xi, xo, lengthParam, radiusParam, lim1, lim2);
         v->setADSRPointers(attack, decay, sustain, release);
     }
 }

@@ -2,11 +2,15 @@
   ==============================================================================
 
     Note.h
-    Created: 29 Apr 2021 4:44:50pm
-    Author:  Ruthu
+    Created: 29 Apr 2021 
+    Author:  B119185
         
     Class to create an instance of a 'note', which is a combination of strings.
     The number of strings is based on where on the keyboard the note lies.
+
+    The strings are combined by delaying the excitation time of each string 
+    by a set interval, and the frequencies of each string are changed using a 
+    sclaed random number, to prevent phase addition and artificial sounds.
 
   ==============================================================================
 */
@@ -28,7 +32,7 @@ public:
     void setSampleRate(float samplerate);
 
     /* Sets the parameters for each string*/
-    void setStringParams(float frequencyinHz, float lengthInMetres, float radiusInMillimetres, float T60TimeInSeconds);
+    void setStringParams(float frequencyinHz, float frequencyParam, float lengthInMetres, float radiusInMillimetres, float T60TimeInSeconds);
 
     /* Sets the string material properties (in SI units)*/
     void setMaterial(float youngsModulus, float density);
@@ -52,30 +56,30 @@ public:
 private:
 
     // Members to pass on to String.h 
-    float sampleRate;
-    float freq;
-    float L;
-    float r;
-    float T60;
+    float sampleRate;                               // Sample Rate
+    float freq;                                     // Frequency of the note
+    float L;                                        // Length of the strings of the note
+    float r;                                        // Radius of the strings of the note
+    float T60;                                      // T60 time of the note
 
     // Vector of string objects
-    std::vector<String*> str;
+    std::vector<String*> str;                       // vector of string objects
 
     // Input Force parameters
-    int durationInSamples;
-    float famp;
-    float *forceSignal;
-    bool excChoice;
-    Hann inputForce;
+    int durationInSamples;                          // duration of input force in samples
+    float famp;                                     // Max amplitude of input force (N)
+    float *forceSignal;                             // Force signal 
+    bool excChoice;                                 // Type of excitation(plucked/struck)
+    Hann inputForce;                                // Object to return force signal        
 
     // Random
-    juce::Random random;
+    juce::Random random;                            // Random object
 
     // Note properties
-    int numStrings;
-    float interval;
+    int numStrings;                                 // Number of strings in the note
+    float interval;                                 // Excitation interval between strings (in samples)
 
-    // Counter
-    int sampleCount = 0;
-    int *noteSampleCount;
+    // Counters to keep track of how many samples have passed for each string and the note in total
+    int sampleCount = 0;                            
+    int *stringSampleCount;
 };
