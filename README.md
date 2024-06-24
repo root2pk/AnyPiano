@@ -1,5 +1,5 @@
-# Piano_Plugin
-Piano Plugin created as part of the 'Audio Programming' course, using the JUCE framework
+# AnyPiano
+AnyPiano is a Piano VST created as part of the 'Audio Programming' course, using the JUCE framework
 
 Uses finite-difference time-domain stiff string simulation to simulate a piano with a large number of variable parameters, to experiment with and produce unique sounds.
 
